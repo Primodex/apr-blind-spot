@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Holiday Debt Payoff Calculator | Freedom Debt Relief</title>
+<style>
+  :root{
+    --navy:#0A2540; --green:#00A14B; --teal:#15808A; --amber:#E0A43B;
+    --cream:#F6F1E8; --card:#FFFFFF; --ink:#13344C; --mut:#6B7B86; --track:#E8EADF;
+    box-sizing:border-box;
+    padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--cream);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.5;}
+  .wrap{max-width:720px;margin:0 auto;padding:24px 16px 40px;}
+  header.band{background:var(--navy);color:#fff;border-radius:16px;padding:22px 24px;margin-bottom:20px;}
+  header.band h1{margin:0 0 6px;font-size:1.5rem;line-height:1.2;}
+  header.band .green{height:5px;width:64px;background:var(--green);border-radius:3px;margin:8px 0 10px;}
+  header.band p{margin:0;color:#B9C6D0;font-size:.95rem;}
+  .card{background:var(--card);border:1px solid #ECE7DB;border-radius:16px;padding:20px 22px;margin-bottom:18px;
+    box-shadow:0 6px 20px rgba(20,40,60,.06);}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+  @media(max-width:520px){.grid{grid-template-columns:1fr}}
+  label{display:block;font-weight:600;font-size:.9rem;color:var(--navy);margin-bottom:6px;}
+  .field{position:relative;}
+  .field .sym{position:absolute;top:50%;left:12px;transform:translateY(-50%);color:var(--mut);font-weight:600;}
+  .field.pct .sym{left:auto;right:12px;}
+  input[type=number]{width:100%;padding:12px 12px 12px 26px;border:1.5px solid #D8DEE4;border-radius:10px;
+    font-size:1.05rem;color:var(--navy);background:#fff;-moz-appearance:textfield;}
+  .field.pct input{padding:12px 28px 12px 12px;}
+  input::-webkit-outer-spin-button,input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0;}
+  input:focus{outline:none;border-color:var(--green);box-shadow:0 0 0 3px rgba(0,161,75,.15);}
+  .hint{font-size:.78rem;color:var(--mut);margin-top:4px;}
+  /* results */
+  .result{margin-top:4px;}
+  .headline{background:var(--navy);color:#fff;border-radius:14px;padding:18px 22px;margin-bottom:14px;}
+  .headline .big{font-size:2.1rem;font-weight:800;color:var(--amber);line-height:1.1;}
+  .headline .sub{color:#D7E0E7;font-size:.95rem;margin-top:4px;}
+  .cmp{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  @media(max-width:520px){.cmp{grid-template-columns:1fr}}
+  .box{border:1px solid #ECE7DB;border-radius:12px;padding:14px 16px;background:#FBFAF6;}
+  .box h3{margin:0 0 8px;font-size:.8rem;letter-spacing:.04em;text-transform:uppercase;color:var(--mut);}
+  .box .num{font-size:1.5rem;font-weight:800;color:var(--navy);}
+  .box .lab{font-size:.85rem;color:var(--ink);}
+  .box.base .num{color:var(--teal);}
+  .box.hol .num{color:var(--green);}
+  .warn{background:#FBECEC;border:1px solid #E7BEBE;color:#8A2B2B;border-radius:12px;padding:14px 16px;font-size:.95rem;}
+  footer{color:var(--mut);font-size:.8rem;text-align:center;margin-top:8px;}
+  footer .brand{color:var(--navy);font-weight:700;}
+  .foot-note{font-size:.78rem;color:var(--mut);margin-top:10px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="band">
+    <h1>Holiday Debt Payoff Calculator</h1>
+    <div class="green"></div>
+    <p>See when you could be debt-free, and what holiday spending adds in time and interest.</p>
+  </header>
+
+  <div class="card">
+    <div class="grid">
+      <div>
+        <label for="bal">Current card balance</label>
+        <div class="field"><span class="sym">$</span><input id="bal" type="number" min="0" step="100" value="5000" inputmode="decimal"></div>
+      </div>
+      <div>
+        <label for="holiday">Holiday spending you plan to add</label>
+        <div class="field"><span class="sym">$</span><input id="holiday" type="number" min="0" step="50" value="1000" inputmode="decimal"></div>
+      </div>
+      <div>
+        <label for="apr">Interest rate (APR)</label>
+        <div class="field pct"><span class="sym">%</span><input id="apr" type="number" min="0" step="0.1" value="22" inputmode="decimal"></div>
+        <div class="hint">Not sure? Check a recent statement; the average card is around 22%.</div>
+      </div>
+      <div>
+        <label for="pay">Monthly payment</label>
+        <div class="field"><span class="sym">$</span><input id="pay" type="number" min="0" step="10" value="150" inputmode="decimal"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card result" id="result" aria-live="polite"></div>
+
+  <footer>
+    <div class="foot-note">This is a free, educational estimate. It assumes a fixed monthly payment, a constant interest rate and no new charges beyond the holiday amount. Your actual payoff may differ.</div>
+    <div style="margin-top:12px" class="brand">Freedom Debt Relief</div>
+  </footer>
+</div>
+
+<script>
+(function(){
+  var ids=["bal","holiday","apr","pay"];
+  ids.forEach(function(id){document.getElementById(id).addEventListener("input",calc);});
+
+  function months(balance, apr, payment){
+    // returns {months, interest} or {never:true}
+    if(balance<=0) return {months:0, interest:0};
+    if(payment<=0) return {never:true};
+    var r=apr/100/12;
+    if(r<=0){ var n=Math.ceil(balance/payment); return {months:n, interest:0}; }
+    if(payment<=balance*r+1e-9) return {never:true};
+    var b=balance, interest=0, m=0;
+    while(b>0 && m<2000){ var i=b*r; interest+=i; b=b+i-payment; m++; }
+    if(m>=2000) return {never:true};
+    return {months:m, interest:interest};
+  }
+  function fmtMoney(x){ return "$"+Math.round(x).toLocaleString("en-US"); }
+  function fmtDur(m){
+    var y=Math.floor(m/12), mo=m%12, out=[];
+    if(y) out.push(y+(y===1?" year":" years"));
+    if(mo) out.push(mo+(mo===1?" month":" months"));
+    return out.join(", ")||"0 months";
+  }
+  function dateAfter(m){
+    var d=new Date(); d.setMonth(d.getMonth()+m);
+    return d.toLocaleString("en-US",{month:"long",year:"numeric"});
+  }
+  function val(id){ var v=parseFloat(document.getElementById(id).value); return isNaN(v)?0:v; }
+
+  function calc(){
+    var bal=val("bal"), hol=val("holiday"), apr=val("apr"), pay=val("pay");
+    var base=months(bal,apr,pay);
+    var withH=months(bal+hol,apr,pay);
+    var el=document.getElementById("result");
+    if(base.never || withH.never){
+      el.innerHTML='<div class="warn"><strong>At this monthly payment, the balance won\u2019t go down.</strong> '+
+        'Your payment needs to be larger than one month\u2019s interest (about '+fmtMoney((bal+hol)*apr/100/12)+' on this balance). Try a higher monthly payment to see a payoff date.</div>';
+      return;
+    }
+    var addMonths=withH.months-base.months;
+    var addInterest=withH.interest-base.interest;
+    el.innerHTML=
+      '<div class="headline">'+
+        '<div class="big">+'+fmtDur(addMonths)+' &middot; '+fmtMoney(addInterest)+'</div>'+
+        '<div class="sub">That\u2019s what '+fmtMoney(hol)+' in holiday spending adds to your payoff \u2014 extra time and extra interest.</div>'+
+      '</div>'+
+      '<div class="cmp">'+
+        '<div class="box base"><h3>Just your current balance</h3>'+
+          '<div class="num">'+fmtDur(base.months)+'</div>'+
+          '<div class="lab">Debt-free around '+dateAfter(base.months)+'<br>'+fmtMoney(base.interest)+' in interest</div></div>'+
+        '<div class="box hol"><h3>With holiday spending</h3>'+
+          '<div class="num">'+fmtDur(withH.months)+'</div>'+
+          '<div class="lab">Debt-free around '+dateAfter(withH.months)+'<br>'+fmtMoney(withH.interest)+' in interest</div></div>'+
+      '</div>';
+  }
+  calc();
+})();
+</script>
+</body>
+</html>
